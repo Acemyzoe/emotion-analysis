@@ -49,69 +49,66 @@ class cnn_model:
         self.model.summary()
 
     def train_model(self):
-           with open("./data/fer2013/fer2013.csv") as f:
-               content = f.readlines()
-           lines = np.array(content)
-           num_of_instances = lines.size
-           print("number of instances: ",num_of_instances)
-           print("instance length: ",len(lines[1].split(",")[1].split(" ")))
+        with open("./data/fer2013/fer2013.csv") as f:
+            content = f.readlines()
+        lines = np.array(content)
+        num_of_instances = lines.size
+        print("number of instances: ",num_of_instances)
+        print("instance length: ",len(lines[1].split(",")[1].split(" ")))
 
-           #init train set & test set
-           x_train, y_train, x_test, y_test = [], [], [], []
-
-           #transfer train and test set data
-           for i in range(1,num_of_instances):
-               try:
-                   emotion, img, usage = lines[i].split(",")
-                   val = img.split(" ")
-                   pixels = np.array(val, 'float32')
-                   emotion = keras.utils.to_categorical(emotion, num_classes)
+        #init train set & test set
+        x_train, y_train, x_test, y_test = [], [], [], []
+        #transfer train and test set data
+        for i in range(1,num_of_instances):
+            try:
+                emotion, img, usage = lines[i].split(",")
+                val = img.split(" ")
+                pixels = np.array(val, 'float32')
+                emotion = keras.utils.to_categorical(emotion, num_classes)
     
-                   if 'Training' in usage:
-                       y_train.append(emotion)
-                       x_train.append(pixels)
-                   elif 'PublicTest' in usage:
-                       y_test.append(emotion)
-                       x_test.append(pixels)
-               except:
-	               print(" ")
+                if 'Training' in usage:
+                    y_train.append(emotion)
+                    x_train.append(pixels)
+                elif 'PublicTest' in usage:
+                    y_test.append(emotion)
+                    x_test.append(pixels)
+            except:
+	            print("error")
 
-           #data transformation for train and test sets
-           x_train = np.array(x_train, 'float32')
-           y_train = np.array(y_train, 'float32')
-           x_test = np.array(x_test, 'float32')
-           y_test = np.array(y_test, 'float32')
+        #data transformation for train and test sets
+        x_train = np.array(x_train, 'float32')
+        y_train = np.array(y_train, 'float32')
+        x_test = np.array(x_test, 'float32')
+        y_test = np.array(y_test, 'float32')
 
-           x_train /= 255 #normalize inputs between [0, 1]
-           x_test /= 255
+        x_train /= 255 #normalize inputs between [0, 1]
+        x_test /= 255
 
-           x_train = x_train.reshape(x_train.shape[0], 48, 48, 1)
-           x_train = x_train.astype('float32')
-           x_test = x_test.reshape(x_test.shape[0], 48, 48, 1)
-           x_test = x_test.astype('float32')
+        x_train = x_train.reshape(x_train.shape[0], 48, 48, 1)
+        x_train = x_train.astype('float32')
+        x_test = x_test.reshape(x_test.shape[0], 48, 48, 1)
+        x_test = x_test.astype('float32')
 
-           print(x_train.shape[0], 'train samples')
-           print(x_test.shape[0], 'test samples')
+        print(x_train.shape[0], 'train samples')
+        print(x_test.shape[0], 'test samples')
 
-           #batch process
-           gen = ImageDataGenerator()
-           train_generator = gen.flow(x_train, y_train, batch_size=batch_size)
+        #batch process
+        gen = ImageDataGenerator()
+        train_generator = gen.flow(x_train, y_train, batch_size=batch_size)
 
-           self.model.compile(loss='categorical_crossentropy'
-               , optimizer=keras.optimizers.Adam()
-               , metrics=['accuracy']
-           )
-           fit = self.model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs)
-           with open('./model/model_fit_log'.'w') as f:
-               f.write(str(fit.history)
+        self.model.compile(loss='categorical_crossentropy'
+            , optimizer=keras.optimizers.Adam()
+            , metrics=['accuracy']
+        )
+        fit = self.model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs)
 
     def save_model(self):
         #将模型结构序列化为JSON
         model_json = self.model.to_json()
-        with open("./model/faceial_model2.json","w") as json_file:
+        with open("./model/faceial_emotion_model_01.json","w") as json_file:
             json_file.write(model_json)
         #保存训练权重    
-        self.model.save_weights('./model/facial_model2.h5')
+        self.model.save_weights('./model/facial_emotion_model_01.h5')
 
     def evaluation(self):
         score = self.model.evaluate(x_test, y_test)
@@ -119,13 +116,20 @@ class cnn_model:
         print('Test accuracy:', 100*score[1])   
 
 
+def get_model():
+    model = cnn_model()
+    model.build_model()
+    model.train_model()
+    model.save_model()
+
 def emotion_analysis(path):
     #载入model
     model = model_from_json(open("./model/facial_expression_model_structure.json", "r").read())
     model.load_weights('./model/facial_expression_model_weights.h5')
+    
     #载入picture
     img_resize = Face_extraction.resize(path)
-    img = image.load_img(img_resize, grayscale=True, target_size=(48, 48))
+    img = image.load_img(img_resize, color_mode="grayscale", target_size=(48, 48))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis = 0)
     x /= 255
@@ -145,11 +149,8 @@ def emotion_analysis(path):
 if __name__ == '__main__':
     num_classes = 7
     batch_size = 128
-    epochs = 1
+    epochs = 100
 
-    model = cnn_model()
-    model.build_model()
-    model.train_model()
-    model.save_model()
-    #emotion_analysis('./data/obama.jpg')
+    #get_model()
+    emotion_analysis('./data/cg1.jpg')
 

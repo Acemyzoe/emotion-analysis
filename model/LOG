@@ -1,0 +1,13 @@
+faceial_emotion_model_00
+
+    batch_size = 128
+    epochs = 50
+    
+    accuracy: 0.7433
+
+faceial_emotion_model_01
+
+    batch_size = 128
+    epochs = 100
+    
+    accuracy: 0.9422
