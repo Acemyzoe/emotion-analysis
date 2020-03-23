@@ -4,8 +4,5 @@
 
 * train.csv包含两列，“情感”和“像素”。“情感”列包含图像中存在的情感的数字代码，范围从0到6（含）。“像素”列包含每个图像中用引号引起来的字符串。该字符串的内容以行主顺序以空格分隔的像素值。test.csv仅包含“像素”列，您的任务是预测情感列。
 
-* 训练集包含28,709个示例。用于排行榜的公共测试集包含3,589个示例。最终测试集用于确定比赛的获胜者，另外还有3,589个示例。
 
-* 该数据集由Pierre-Luc Carrier和Aaron Courville进行，是正在进行的研究项目的一部分。他们已经为研讨会的组织者提供了其数据集的初步版本，供比赛使用。
-
-* https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data
+* [比赛官网 ](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data)

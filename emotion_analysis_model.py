@@ -147,10 +147,14 @@ def emotion_analysis(path):
 
 
 if __name__ == '__main__':
+
+    #修改网络训练的参数
     num_classes = 7
     batch_size = 128
     epochs = 100
 
-    #get_model()
+    get_model()
+
+    #分析一张图片
     emotion_analysis('./data/cg1.jpg')
 
