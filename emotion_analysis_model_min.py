@@ -6,9 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
-from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import model_from_json
 
@@ -20,31 +17,24 @@ class cnn_model:
 
     def build_model(self):
         #construct CNN structure
-        self.model = Sequential()
-        #1st convolution layer
-        self.model.add(Conv2D(64, (5, 5), activation='relu', input_shape=(48,48,1)))
-        self.model.add(MaxPooling2D(pool_size=(5,5), strides=(2, 2)))
+        self.model = tf.keras.models.Sequential()
+        self.model.add(tf.keras.layers.Conv2D(32, (3, 3),padding='same',activation='relu',input_shape=(48,48,1)))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(3,3),strides=(2,2)))
+        self.model.add(tf.keras.layers.Dropout(0.5))
 
-        #2nd convolution layer
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(AveragePooling2D(pool_size=(3,3), strides=(2, 2)))
+        self.model.add(tf.keras.layers.Conv2D(64, (3, 3),padding='same',activation='relu'))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(3,3),strides=(2, 2)))
+        self.model.add(tf.keras.layers.Dropout(0.5))
 
-        #3rd convolution layer
-        self.model.add(Conv2D(128, (3, 3), activation='relu'))
-        self.model.add(Conv2D(128, (3, 3), activation='relu'))
-        self.model.add(AveragePooling2D(pool_size=(3,3), strides=(2, 2)))
+        self.model.add(tf.keras.layers.Conv2D(128, (5, 5),padding='same',activation='relu'))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(3,3),strides=(2, 2)))
+        self.model.add(tf.keras.layers.Dropout(0.5))
 
-        self.model.add(Flatten())
-
-        #fully connected neural networks
-        self.model.add(Dense(1024, activation='relu'))
-        self.model.add(Dropout(0.2))
-        self.model.add(Dense(1024, activation='relu'))
-        self.model.add(Dropout(0.2))
-
-        self.model.add(Dense(num_classes, activation='softmax'))
-        
+        self.model.add(tf.keras.layers.Flatten())
+        self.model.add(tf.keras.layers.Dense(1024, activation='relu'))
+        self.model.add(tf.keras.layers.Dropout(0.5))
+        self.model.add(tf.keras.layers.Dense(128, activation='relu'))
+        self.model.add(tf.keras.layers.Dense(7, activation='softmax'))       
         self.model.summary()
 
     def train_model(self):
@@ -63,7 +53,7 @@ class cnn_model:
                 emotion, img, usage = lines[i].split(",")
                 val = img.split(" ")
                 pixels = np.array(val, 'float32')
-                emotion = keras.utils.to_categorical(emotion, num_classes)
+                emotion = keras.utils.to_categorical(emotion, 7)
     
                 if 'Training' in usage:
                     y_train.append(emotion)
@@ -100,14 +90,14 @@ class cnn_model:
     def save_model(self):
         #将模型结构序列化为JSON
         model_json = self.model.to_json()
-        with open("./model/faceial_emotion_model_t.json","w") as json_file:
+        with open("./model_min/faceial_emotion_model.json","w") as json_file:
             json_file.write(model_json)
         #保存训练权重    
-        self.model.save_weights('./model/facial_emotion_model_t.h5')
+        self.model.save_weights('./model_min/facial_emotion_model.h5')
 
     def save(self):
-        self.model.save('./model/emotion_model',save_format = 'tf')
-        self.model.save('./model/emotion_model.h5')
+        self.model.save('./model_min/emotion_model',save_format = 'tf')
+        self.model.save('./model_min/emotion_model.h5')
 
     def evaluation(self):
         score = self.model.evaluate(x_test, y_test)
@@ -124,8 +114,8 @@ def get_model():
 
 def emotion_analysis(path):
     #载入model
-    model = model_from_json(open("./model/facial_expression_model_structure.json", "r").read())
-    model.load_weights('./model/facial_expression_model_weights.h5')
+    model = model_from_json(open("./model_min/facial_expression_model_structure.json", "r").read())
+    model.load_weights('./model_min/facial_expression_model_weights.h5')
     
     #载入picture
     img_resize = Face_extraction.resize(path)
@@ -149,9 +139,8 @@ def emotion_analysis(path):
 if __name__ == '__main__':
 
     #修改网络训练的参数
-    num_classes = 7
-    batch_size = 128
-    epochs = 1
+    batch_size = 64
+    epochs = 50
 
     get_model()
 

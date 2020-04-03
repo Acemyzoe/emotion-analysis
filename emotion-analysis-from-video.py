@@ -12,7 +12,7 @@ face_cascade = cv2.CascadeClassifier('./model/haarcascade_frontalface_alt.xml')
 #face expression recognizer initialization
 from keras.models import model_from_json
 model = model_from_json(open("./model/facial_expression_model_structure.json", "r").read())
-model.load_weights('./model/facial_model.h5') #load weights
+model.load_weights('./model/facial_expression_model_weights.h5') #load weights
 #-----------------------------
 
 emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
