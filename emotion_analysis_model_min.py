@@ -11,6 +11,10 @@ from tensorflow.keras.models import model_from_json
 
 import Face_extraction
 
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 class cnn_model:
     def __init__(self):
         self.model = None
@@ -93,7 +97,7 @@ class cnn_model:
         with open("./model_min/faceial_emotion_model.json","w") as json_file:
             json_file.write(model_json)
         #保存训练权重    
-        self.model.save_weights('./model_min/facial_emotion_model.h5')
+        self.model.save_weights('./model_min/facial_emotion_model_weight.h5')
 
     def save(self):
         self.model.save('./model_min/emotion_model',save_format = 'tf')

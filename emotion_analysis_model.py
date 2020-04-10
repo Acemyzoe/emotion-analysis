@@ -4,15 +4,20 @@ import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
-from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.models import model_from_json
+import keras
+
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
+from keras.layers import Dense, Activation, Dropout, Flatten
+from keras.preprocessing import image
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import model_from_json
 
 import Face_extraction
+
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+assert len(physical_devices) > 0, "Not enough GPU hardware devices available"
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 class cnn_model:
     def __init__(self):
@@ -91,23 +96,23 @@ class cnn_model:
         print(x_train.shape[0], 'train samples')
         print(x_test.shape[0], 'test samples')
 
+        #batch process
+        gen = ImageDataGenerator()
+        train_generator = gen.flow(x_train, y_train, batch_size=batch_size)
+
         self.model.compile(loss='categorical_crossentropy'
-            , optimizer='adam'
+            , optimizer=keras.optimizers.Adam()
             , metrics=['accuracy']
         )
-        fit = self.model.fit(x_train,y_train, batch_size=batch_size, epochs=epochs)
+        fit = self.model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs)
 
     def save_model(self):
         #将模型结构序列化为JSON
         model_json = self.model.to_json()
-        with open("./model/faceial_emotion_model_t.json","w") as json_file:
+        with open("./model/faceial_emotion_model_01.json","w") as json_file:
             json_file.write(model_json)
         #保存训练权重    
-        self.model.save_weights('./model/facial_emotion_model_t.h5')
-
-    def save(self):
-        self.model.save('./model/emotion_model',save_format = 'tf')
-        self.model.save('./model/emotion_model.h5')
+        self.model.save_weights('./model/facial_emotion_model_01.h5')
 
     def evaluation(self):
         score = self.model.evaluate(x_test, y_test)
@@ -120,7 +125,6 @@ def get_model():
     model.build_model()
     model.train_model()
     model.save_model()
-    model.save()
 
 def emotion_analysis(path):
     #载入model
@@ -151,10 +155,10 @@ if __name__ == '__main__':
     #修改网络训练的参数
     num_classes = 7
     batch_size = 128
-    epochs = 1
+    epochs = 100
 
     get_model()
 
     #分析一张图片
-    #emotion_analysis('./data/cg1.jpg')
+    emotion_analysis('./data/cg1.jpg')
 
